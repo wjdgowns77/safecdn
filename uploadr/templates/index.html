@@ -6,59 +6,38 @@
 </head>
 <body>
 
-<h1>Flask Multiple Upload Demo</h1>
+<h1>IMH CDN서버 업로드</h1>
+IMH CDN서버에 업로드합니다. <br>
 
-This is a simple Python Flask web app to demonstrate an HTML5 multiple file
-uploader application combined with normal form data.<p>
 
-This uses JavaScript to post an Ajax upload to the back-end which gives us a
-nice progress bar to see the status of the upload (note: it doesn't break down
-the status per-picture, instead it's the status of the entire upload altogether).<p>
-
-A normal <code>&lt;form&gt;</code> tag is used for the upload. If the user has
-JavaScript disabled in their browser, a normal HTTP upload is posted to the
-back-end. The same endpoint is used in both cases: when the Ajax request does it,
-the server returns a unique ID to the front-end and JavaScript does the redirect.
-If the user has scripts disabled, the back-end will initiate the redirect for
-them instead.<p>
-
-You can upload files by using the multi-select file upload box (supported in
-most browsers and Internet Explorer 10+), or by dragging and dropping files into
-the dashed box below (again, in most browsers).<p>
-
-This demo app doesn't do anything with the other form data except for print it
-out in the terminal window, but it demonstrates that you <em>can</em> get to the
-other form data in addition to the uploaded files.<p>
-
-Only upload <strong>image type files</strong> in the form below.<p>
-
-<hr><p>
+<hr align="left" style="width:350px"><p>
 
 <form id="upload-form" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
-    <strong>Normal Text Box:</strong><br>
-    <input type="text" size="20" name="input1" value="uploads"><p>
+    <strong>Upload OP#</strong><br>
+    <input type="text" size="20" name="Upload_OP"><p>
 
-    <strong>Select Box:</strong><br>
-    <select name="selectbox">
-        <option value="abc">ABC</option>
-        <option value="xyz">XYZ</option>
-    </select><p>
+    <strong>업로드 서버</strong><br>
+    <input type="checkbox" name="Server" value="cdn1.cntc" checked disabled>천안(cdn1.cntc.imholic.com)<p>
+    
+    <strong>파일 이름 규칙:</strong><br>
+    <input type="radio" name="name_type" value="REPL" checked> 한글/공백 제거하고 파일이름 보존. (기본) <br>
+    <input type="radio" name="name_type" value="RAND"> 확장자만 남기고 랜덤. <br>
+    <input type="radio" name="name_type" value="ORIG"> 파일이름 무조건 보전. <br>
 
-    <strong>Checkbox:</strong><br>
-    <input type="checkbox" name="checkbox" value="on" checked> On<p>
+    <strong>링크 생성 타입:</strong><br>
+    <input type="radio" name="link_type" value="Discord" checked> 디스코드 타입 (기본) <br>
+    <input type="radio" name="link_type" value="Long"> 긴 UUID 타입 <br>
+    <input type="radio" name="link_type" value="Short"> 짧은 타입 <p>    
 
-    <strong>Radio:</strong><br>
-    <input type="radio" name="radio" value="yes" checked> Yes
-    <input type="radio" name="radio" value="no"> No<p>
-
-    <strong>Text Area:</strong><br>
-    <textarea rows="4" cols="40" name="textarea">Text area contents.</textarea><p>
+    <strong>Note(파일 설명)</strong><br>
+    <textarea rows="4" cols="40" name="File_Description" placeholder="해당 파일을 설명해주세요"></textarea><p>
 
     <strong>Files:</strong><br>
     Select files OR drag them into the box below.
-    <input id="file-picker" type="file" name="file" accept="image/*" multiple><p>
+    <br>
+    <input id="file-picker" type="file" name="file" multiple><p>
 
-    <div id="dropbox">
+    <div id="dropbox", style="width:300px">
         Drag and Drop Files Here
     </div><p>
 
