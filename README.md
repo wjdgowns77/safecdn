@@ -1,33 +1,13 @@
-# Flask Multi Upload Demo
+# The SafeCDN : self-hosted Discord CDN alternative
 
-This is a quick example of a Python/Flask app I wrote while figuring out how to
-make an HTML5 multi-file uploader script.
-
-This app just presents an HTML form full of the usual types of input elements
-(text boxes, checkboxes, etc.), and a multi-file input box, and an HTML5
-drag/drop target for dragging files from your PC into the page.
-
-It demonstrates that you can combine a multi-file upload form along with other
-form data (i.e. letting a user choose album details to upload the pictures into).
-There's also a live progress bar that tells you the current progress of the
-upload. It doesn't break it down by individual file though, to keep things simpler.
-
-It's backwards compatible and also works with clients that have scripts disabled.
-The same endpoint is used on the back-end to handle the form post and file
-upload; when the Ajax calls the endpoint, the Flask app returns a JSON response
-including the "unique ID" chosen for the upload, and then the JavaScript on
-the front-end initiates a redirect. With scripts disabled (so that the form will
-`POST` directly to the back-end), a normal HTTP redirect is given to the final
-results page.
-
-This code demonstrates the bare essentials for how to get a multi-uploader to
-work using HTML5, JavaScript and jQuery -- without needing Flash or Java.
-It works in most modern browsers and Internet Explorer 10+.
-
-It's only 184 lines of JavaScript and 80 lines of Python.
+디스코드 CDN대용으로 사용 가능한 safeCDN프로그램입니다.    
+http(s)://웹사이트주소.도메인/attachments/1016950312336298881/1797700713142760174/파일이름.확장자 형식으로 업로드가 진행되며, 업로드 제한용량은 없습니다.
+곧 서비스 예정인 imholic CDN(가칭)에서 해당 소스를 이용하여 서비스 예정입니다.
 
 # License
+AGPL라이선스 채택중이기 때문에 해당 프로그램을 이용하여 서버를 돌리는 경우 해당 사실을 공개하고 서버 소스코드를 인터넷에 함께 공개하여야 합니다.
 
-This is released in the public domain in the hopes that it will be generally
-useful to other developers. I wrote this just to see how to do it and to use
-as reference in other projects.
+# Orignal
+원래 https://github.com/kirsle/flask-multi-upload 소스코드를 이용하여 만들어졌고, 자체 사용을 위하여 상당한 수정이 가해졌습니다.
+
+
