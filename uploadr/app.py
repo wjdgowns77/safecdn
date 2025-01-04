@@ -1,9 +1,12 @@
 from flask import Flask, request, redirect, url_for, render_template, make_response, send_file
-import os
+import os, time
 import json
 import glob
 import re #정규표현식 (파일이름 수정을 위함)
 from uuid import uuid4
+from requests import get
+from collections import OrderedDict
+import codecs
 
 app = Flask(__name__)
 
@@ -16,6 +19,7 @@ download_path = "attachments"
 prohibited_file_name = ["IMH_File_uploaderinfo.txt","IMH_File_Downloaderinfo.txt"]
 print("Service Started.")
 print("Working Dir = " + cwd + ", file_save_dir= " + static_file_save_dir )
+
 
 
 ######## 업로드 페이지 핸들링 시작 ########
@@ -37,25 +41,39 @@ def upload(): #Handle the upload of a file.
 	'''
 	
 	## 순서 : 
-	#		1) 사용자 입력 파싱
+	#		1) 사용자 입력 파싱 및 사용자 정보 확인
 	#		2) UUID생성
 	#		3) 폴더생성
 	#		4) 파일저장
 	#		5) 
 	
 	#### 사용자 입력 파싱 시작 ####
-	client_Upload_OP		 = form.get("Upload_OP", None)	# * Upload OP# [Upload_OP]
-	client_Server			 = form.get("Server", None)		# * 업로드 서버 [Server]		- cdn1.cntc(단일)
-	client_name_type		 = form.get("name_type", None)	# * 파일 이름 규칙[name-type]	- REPL(한글/공백 제거하고 파일이름 보전)
-	#														  - RAND(확장자만 남기고 랜덤)	- ORIG(파일이름 무조건 보전)
-	client_link_type		 = form.get("link_type", None)  # * 링크 생성 타입 [link_type]	- Discord(디스코드 타입)
-	#														  - Long(긴 UUID타입)			- Short(짧은 타입)
-	client_File_Description  = form.get("File_Description", None) # Note(파일 설명) [File_Description]
-	client_is_ajax           = form.get("__ajax", None)		# ajax여부
+	client_Upload_OP		 = form.get("Upload_OP", "None")	# * Upload OP# [Upload_OP]
+	client_Server			 = form.get("Server", "None")		# * 업로드 서버 [Server]		- cdn1.cntc(단일)
+	client_name_type		 = form.get("name_type", "REPL")	# * 파일 이름 규칙[name-type]	- REPL(한글/공백 제거하고 파일이름 보전)
+	#														      - RAND(확장자만 남기고 랜덤)	- ORIG(파일이름 무조건 보전)
+	client_link_type		 = form.get("link_type", "Discord")        # * 링크 생성 타입 [link_type]	- Discord(디스코드 타입)
+	#														      - Long(긴 UUID타입)			- Short(짧은 타입)
+	client_File_Description  = form.get("File_Description", "None") # Note(파일 설명) [File_Description]
+	client_is_ajax           = form.get("__ajax", None)		    # ajax여부
 	if client_is_ajax == "true": # ajax를 통한 Req인지를 파악한다.
 		is_ajax = True
 	else:
-		is_ajax = False		
+		is_ajax = False	
+	
+	client_user_ipaddr1		 = str(request.remote_addr)
+	try:
+		client_user_ipaddr2	 = str(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
+	except:
+		client_user_ipaddr2  = "RAW"
+	client_user_ipaddr = client_user_ipaddr1 + "(" + client_user_ipaddr2 + ")"
+	
+	try:
+		client_user_agent	 = str(request.headers.get('User-Agent')) + "(RAW-UA)"
+	except:
+		client_user_agent    = "NA"
+	
+	
 	#### 사용자 입력 파싱 끝.  ####
 	
 	
@@ -66,6 +84,10 @@ def upload(): #Handle the upload of a file.
 		if client_link_type == "Discord": #디스코드 타입
 			upload_key1 = str(uuid4().int)[:19] # 첫번째 디렉터리
 			upload_key2 = str(uuid4().int)[:19] # 디렉터리 안에 들어가는, 두번째 디렉터리
+			upload_key  = upload_key1 + "/" + upload_key2
+		elif client_link_type == "Long": #Long 타입
+			upload_key1 = str(uuid4().int)  # 첫번째 디렉터리
+			upload_key2 = str(uuid4().int)  # 디렉터리 안에 들어가는, 두번째 디렉터리
 			upload_key  = upload_key1 + "/" + upload_key2
 		elif client_link_type == "Short": #쇼트 타입
 			upload_key1 = str(uuid4().int)[:5]  # 첫번째 디렉터리
@@ -203,15 +225,32 @@ def view_or_download_file_type_A(uuid1,uuid2,filename):
 	# Get their files.
 	#filepath = static_file_save_dir_wout_root + "/" + uuid1 + "/" + uuid2 + "/" + filename
 	filepath = cwd + "/" + static_file_save_dir + "/" + uuid1 + "/" + uuid2 + "/" + filename #자꾸 에러가 나므로 절대경로 강제지정.
-
-	#print("pwd = " + str(os.system("pwd")) + "filepath = " + filepath)
-	#print(os.path.isfile(filepath))
 	if not os.path.isfile(filepath):
-		print("NonExsist")
-		return no_page_404_xml("view_filelist_type_A " + filepath)
-		#return "Error: UUID not found!"
-
-	#print("Exsist!!")
+		if (request.args.get("is",None)!= None)and(request.args.get("ex",None)!= None)and(request.args.get("hm",None)!= None):
+			try:
+				discord_cdnlink_ex = int(str(request.args.get("ex","")),16) #ex값(expire)을 추출해온다. 한번에 integer형으로 추출한다.
+				if (discord_cdnlink_ex+60 < int(time.time())): # 이미 Expired되었거나 Expire가 임박(60초이내)한 경우
+					return no_page_404_xml(request.url)
+				print("Getting File from Discord Server")
+				res_path = "https://cdn.discordapp.com" + request.full_path
+				return redirect(res_path)
+			except Exception as e:
+				return no_page_404_xml(request.url)
+		else:
+			return no_page_404_xml(request.url)
+		
+	
+	client_user_ipaddr1		 = str(request.remote_addr)
+	try:
+		client_user_ipaddr2	 = str(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
+	except:
+		client_user_ipaddr2  = "RAW"
+	client_user_ipaddr = client_user_ipaddr1 + "(" + client_user_ipaddr2 + ")"
+	
+	try:
+		client_user_agent	 = str(request.headers.get('User-Agent')) + "(RAW-UA)"
+	except:
+		client_user_agent    = "NA"
 	return send_file(filepath, as_attachment=True)
 #### 파일 다운로드(B타입) 끝 ####
 
