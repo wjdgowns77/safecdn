@@ -251,6 +251,53 @@ def view_or_download_file_type_A(uuid1,uuid2,filename):
 		client_user_agent	 = str(request.headers.get('User-Agent')) + "(RAW-UA)"
 	except:
 		client_user_agent    = "NA"
+	
+	try:
+		ext = filename.split(".")[-1].lower()
+	except:
+		ext = ""
+	
+	
+	if ext == "jpg" or ext == "jpeg" :
+		mine_type_str = "image/jpeg"
+	elif ext == "png" :
+		mine_type_str = "image/png"
+	elif ext == "bmp" :
+		mine_type_str = "image/x-ms-bmp"
+	elif ext == "ico" :
+		mine_type_str = "image/x-icon"
+	elif ext == "svg" :
+		mine_type_str = "image/svg+xml"
+	
+	elif ext == "txt" :
+		mine_type_str = "text/plain"
+	
+	elif ext == "mp3" :
+		mine_type_str = "audio/mpeg"
+	elif ext == "wav" :
+		mine_type_str = "audio/vnd.wav"
+	elif ext == "wma" :
+		mine_type_str = "audio/x-ms-wma"
+	
+	
+	elif ext == "mp4" :
+		mine_type_str = "video/mp4"
+	elif ext == "webm":
+		mine_type_str = "video/webm"
+	elif ext == "mkv":
+		mine_type_str = "video/x-matroska"
+	elif ext == "wmv":
+		mine_type_str = "video/x-ms-wmv"
+	
+	else:
+		mine_type_str = "application/octet-stream"
+	
+	
+	
+	if (mine_type_str == "application/octet-stream"):
+		return send_file(filepath, as_attachment=True)
+	else:
+		return send_file(filepath, mimetype=mine_type_str)
 	return send_file(filepath, as_attachment=True)
 #### 파일 다운로드(B타입) 끝 ####
 
