@@ -209,7 +209,7 @@ def view_filelist_type_B(uuid1,uuid2):
 		filename_now = parse.quote(filename_now)
 		link_now = service_path + "/" + download_path + "/" + uuid1 + "/" + uuid2 + "/" + filename_now
 		filelink_list.append(link_now)
-		file_linkbox_list = link_now + "\n"
+		file_linkbox_list = file_linkbox_list + link_now + "\n"
 		#print(file_linkbox_list)
 	
 	return render_template("files.html",
