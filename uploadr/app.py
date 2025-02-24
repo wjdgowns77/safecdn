@@ -7,6 +7,7 @@ from uuid import uuid4
 from requests import get
 from collections import OrderedDict
 import codecs
+from urllib import parse
 
 app = Flask(__name__)
 
@@ -205,6 +206,7 @@ def view_filelist_type_B(uuid1,uuid2):
 	file_linkbox_list = ""
 	filelink_list = []
 	for filename_now in files:
+		filename_now = parse.quote(filename_now)
 		link_now = service_path + "/" + download_path + "/" + uuid1 + "/" + uuid2 + "/" + filename_now
 		filelink_list.append(link_now)
 		file_linkbox_list = link_now + "\n"
